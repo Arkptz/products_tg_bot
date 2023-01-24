@@ -5,7 +5,7 @@ from ..bot import bot, dp
 from ..decors import admin
 from ..states import AddComing, AddExpenditure
 from ..keyboards import kbd
-from DB import ComingDb, SessionDb
+from DB import ComingDb, SessionDb, ProductDb
 import traceback
 
 
@@ -24,8 +24,9 @@ async def coming(cq: CallbackQuery, state:FSMContext):
 async def select_product_(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
-    product = cq.data.split('select_product_')[1]
-    await state.update_data(product=product, msg=msg)
+    id_product = int(cq.data.split('select_product_')[1])
+    a:ProductDb = SessionDb.get(ProductDb, id_product)
+    await state.update_data(product=a.product_name, msg=msg)
     await bot.edit_message_text(chat_id=user_id, message_id=msg.message_id, text='Введи количество:', reply_markup=kbd.single_back())
     await AddComing.next()
 

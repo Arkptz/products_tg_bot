@@ -5,7 +5,7 @@ from ..bot import bot, dp
 from ..decors import admin
 from ..states import AddExpenditure
 from ..keyboards import kbd
-from DB import ExpenditureDb, SessionDb
+from DB import ExpenditureDb, SessionDb, FlowDb
 import traceback
 
 
@@ -35,8 +35,9 @@ async def select_product_(cq: CallbackQuery, state: FSMContext):
 async def select_flow_(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
-    flow = cq.data.split('select_flow_')[1]
-    await state.update_data(flow=flow, msg=msg)
+    flow_id = int(cq.data.split('select_flow_')[1])
+    flow:FlowDb = SessionDb.get(FlowDb, flow_id)
+    await state.update_data(flow=flow.flow_exp, msg=msg)
     await bot.edit_message_text(chat_id=user_id, message_id=msg.message_id, text='Введи количество:', reply_markup=kbd.single_back())
     await AddExpenditure.next()
 

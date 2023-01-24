@@ -24,7 +24,7 @@ async def on_startup(dp):
             list_admins_new.append(ad)
     SessionDb.add_all(list_admins_new)
     SessionDb.commit()
-    for _admin in cfg.admin_list:
+    for _admin in list_actual_admins + list_admins_new:
         menu_markup = kbd.main_menu()
         try:
             await bot.send_message(

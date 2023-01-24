@@ -4,8 +4,8 @@ from DB import SessionDb, FlowDb, ProductDb
 
 class Keyboards:
     butt_on_page = 20
-    products = [i[0] for i in SessionDb.query(ProductDb.product_name)]
-    flows =  [i[0] for i in SessionDb.query(FlowDb.flow_exp)]
+    products = [[i.id, i.product_name] for i in SessionDb.query(ProductDb)]
+    flows =  [[i.id, i.flow_exp] for i in SessionDb.query(FlowDb)]
     def __init__(self):
         self.btn_back_to_menu = InlineKeyboardButton(
             text='↩️Главное меню',
@@ -29,8 +29,8 @@ class Keyboards:
         end = start+self.butt_on_page
         select_products = self.products[start:end]
         next_page = self.products[end:end+self.butt_on_page]
-        for product in select_products:
-            markup.insert(InlineKeyboardButton(text=product, callback_data=f'select_product_{product}'))
+        for product_id, product in select_products:
+            markup.insert(InlineKeyboardButton(text=product, callback_data=f'select_product_{product_id}'))
         markup.row(InlineKeyboardButton(
             text='------------------------------------------', callback_data='.....'))
         footer = []
@@ -53,8 +53,8 @@ class Keyboards:
         flows = self.flows
         select_flows = flows[start:end]
         next_page = flows[end:end+self.butt_on_page]
-        for flow in select_flows:
-            markup.insert(InlineKeyboardButton(text=flow, callback_data=f'select_flow_{flow}'))
+        for flow_id, flow in select_flows:
+            markup.insert(InlineKeyboardButton(text=flow, callback_data=f'select_flow_{flow_id}'))
         markup.row(InlineKeyboardButton(
             text='------------------------------------------', callback_data='.....'))
         footer = []
