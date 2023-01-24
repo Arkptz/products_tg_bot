@@ -4,11 +4,9 @@ from aiogram.dispatcher import FSMContext
 from ..bot import bot, dp
 from ..decors import admin
 from ..states import AddExpenditure
-from ..keyboards import Keyboards
-from Utils.classes import Expenditure
-from Utils.db_connector import db_expenditures
+from ..keyboards import kbd
+from DB import ExpenditureDb, SessionDb
 import traceback
-kbd = Keyboards()
 
 
 @dp.callback_query_handler(text='expenditure')
@@ -68,8 +66,9 @@ async def _price(msg: Message, state: FSMContext):
     data = await state.get_data()
     try:
         price = float(price)
-        exp = Expenditure(product=data['product'], count=data['count'],price=price, user_id=user_id, flow_direction =data['flow'])
-        db_expenditures.add_expenditure(exp)
+        exp = ExpenditureDb(user_id=user_id,product=data['product'], count=data['count'],price=price, flow_direction =data['flow'] )
+        SessionDb.add(exp)
+        SessionDb.commit()
         await bot.edit_message_text(chat_id=user_id, message_id=data['msg'].message_id, text='Расход записан.', reply_markup=kbd.all_products(page=data['page'] if 'page' in data.keys() else 0))
         await AddExpenditure.product.set()
     except:

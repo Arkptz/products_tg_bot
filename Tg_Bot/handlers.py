@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
 from loguru import logger as log
 from .bot import dp, bot
-from Utils.db_connector import db_admins
+from DB import SessionDb, AdminDb
 import config as cfg
 from .keyboards import Keyboards
 from .decors import admin
@@ -14,10 +14,16 @@ kbd = Keyboards()
 
 async def on_startup(dp):
     """ try to add admins and create table to add MAIN admin from cfg.admin_list"""
-    db_admins.add_admins(list_users=cfg.admin_list)
     """ notify admins when bot started """
     log.info('send main menu')
-
+    list_actual_admins = [i[0] for i in SessionDb.query(AdminDb.user_id).all()]
+    list_admins_new = []
+    for id in cfg.admin_list:
+        if not id in list_actual_admins:
+            ad = AdminDb(user_id=id)
+            list_admins_new.append(ad)
+    SessionDb.add_all(list_admins_new)
+    SessionDb.commit()
     for _admin in cfg.admin_list:
         menu_markup = kbd.main_menu()
         try:
@@ -64,7 +70,7 @@ states = [AddComing.count,
 
 @dp.callback_query_handler(text='back_to_menu', state=states)
 @admin
-async def back(cq: CallbackQuery, state:FSMContext):
+async def back(cq: CallbackQuery, state: FSMContext):
     await state.finish()
     await back_to_menu(cq)
 

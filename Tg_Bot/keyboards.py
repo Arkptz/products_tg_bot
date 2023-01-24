@@ -1,9 +1,11 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import config as cfg
+from DB import SessionDb, FlowDb, ProductDb
 
 class Keyboards:
     butt_on_page = 20
-    products = list(cfg.products.keys())
+    products = [i[0] for i in SessionDb.query(ProductDb.product_name)]
+    flows =  [i[0] for i in SessionDb.query(FlowDb.flow_exp)]
     def __init__(self):
         self.btn_back_to_menu = InlineKeyboardButton(
             text='↩️Главное меню',
@@ -48,8 +50,7 @@ class Keyboards:
         markup = InlineKeyboardMarkup(row_width=3)
         start = page * 20
         end = start+self.butt_on_page
-        flows = cfg.products[product]
-        print(flows)
+        flows = self.flows
         select_flows = flows[start:end]
         next_page = flows[end:end+self.butt_on_page]
         for flow in select_flows:
@@ -70,3 +71,4 @@ class Keyboards:
         return markup
 
 
+kbd = Keyboards()

@@ -4,11 +4,9 @@ from aiogram.dispatcher import FSMContext
 from ..bot import bot, dp
 from ..decors import admin
 from ..states import AddComing, AddExpenditure
-from ..keyboards import Keyboards
-from Utils.classes import Coming
-from Utils.db_connector import db_comings
+from ..keyboards import kbd
+from DB import ComingDb, SessionDb
 import traceback
-kbd = Keyboards()
 
 
 @dp.callback_query_handler(text='coming')
@@ -41,8 +39,9 @@ async def count(msg: Message, state: FSMContext):
     data = await state.get_data()
     try:
         count = float(count)
-        com = Coming(product=data['product'], count=count, user_id=user_id)
-        db_comings.add_coming(com)
+        com = ComingDb(user_id=user_id, product =data['product'], count = count)
+        SessionDb.add(com)
+        SessionDb.commit()
         await bot.edit_message_text(chat_id=user_id, message_id=data['msg'].message_id, text='Приход записан.', reply_markup=kbd.all_products(page=data['page'] if 'page' in data.keys() else 0))
         await AddComing.product.set()
     except:

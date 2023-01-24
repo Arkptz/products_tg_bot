@@ -1,6 +1,6 @@
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
-from Utils.db_connector import db_admins
+from DB import SessionDb, AdminDb
 from .bot import bot
 
 
@@ -9,7 +9,8 @@ def admin(input_func):
         msg = args[0]
         if type(msg) != Message:
             msg = msg.message  # каллбек
-        if msg.chat.id in db_admins.get_admins():
+        list_admins = [i[0] for i in SessionDb.query(AdminDb.user_id).all()]
+        if msg.chat.id in list_admins:
             try:
                 await input_func(*args)
             except:
