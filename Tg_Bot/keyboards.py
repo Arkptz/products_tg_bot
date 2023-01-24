@@ -24,7 +24,7 @@ class Keyboards:
         return markup
 
     def all_products(self, page=0):
-        markup = InlineKeyboardMarkup(row_width=3)
+        markup = InlineKeyboardMarkup(row_width=2)
         start = page * 20
         end = start+self.butt_on_page
         select_products = self.products[start:end]
@@ -47,7 +47,7 @@ class Keyboards:
         return markup
 
     def all_flows(self, product:str, page=0):
-        markup = InlineKeyboardMarkup(row_width=3)
+        markup = InlineKeyboardMarkup(row_width=2)
         start = page * 20
         end = start+self.butt_on_page
         flows = self.flows
