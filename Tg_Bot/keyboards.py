@@ -4,8 +4,8 @@ from DB import SessionDb, FlowDb, ProductDb
 
 class Keyboards:
     butt_on_page = 20
-    products = [[i.id, i.product_name] for i in SessionDb.query(ProductDb)]
-    flows =  [[i.id, i.flow_exp] for i in SessionDb.query(FlowDb)]
+    # products = [[i.id, i.product_name] for i in SessionDb.query(ProductDb)]
+    # flows =  [[i.id, i.flow_exp] for i in SessionDb.query(FlowDb)]
     def __init__(self):
         self.btn_back_to_menu = InlineKeyboardButton(
             text='↩️Главное меню',
@@ -26,6 +26,7 @@ class Keyboards:
     def all_products(self, page=0):
         markup = InlineKeyboardMarkup(row_width=2)
         start = page * 20
+        self.products = [[i.id, i.product_name] for i in SessionDb.query(ProductDb).order_by(-ProductDb.clicks)]
         end = start+self.butt_on_page
         select_products = self.products[start:end]
         next_page = self.products[end:end+self.butt_on_page]
@@ -48,6 +49,7 @@ class Keyboards:
 
     def all_flows(self, product:str, page=0):
         markup = InlineKeyboardMarkup(row_width=2)
+        self.flows =  [[i.id, i.flow_exp] for i in SessionDb.query(FlowDb).order_by(-FlowDb.clicks)]
         start = page * 20
         end = start+self.butt_on_page
         flows = self.flows

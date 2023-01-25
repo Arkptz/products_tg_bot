@@ -5,7 +5,7 @@ from ..bot import bot, dp
 from ..decors import admin
 from ..states import AddExpenditure
 from ..keyboards import kbd
-from DB import ExpenditureDb, SessionDb, FlowDb
+from DB import ExpenditureDb, SessionDb, FlowDb, ProductDb
 import traceback
 
 
@@ -24,8 +24,8 @@ async def coming(cq: CallbackQuery, state: FSMContext):
 async def select_product_(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
-    product = cq.data.split('select_product_')[1]
-    await state.update_data(product=product, msg=msg)
+    product = int(cq.data.split('select_product_')[1])
+    await state.update_data(product_id=product, msg=msg)
     await bot.edit_message_text(chat_id=user_id, message_id=msg.message_id, text='Выбери направление:', reply_markup=kbd.all_flows(product=product))
     await AddExpenditure.next()
 
@@ -37,7 +37,7 @@ async def select_flow_(cq: CallbackQuery, state: FSMContext):
     user_id = msg.chat.id
     flow_id = int(cq.data.split('select_flow_')[1])
     flow:FlowDb = SessionDb.get(FlowDb, flow_id)
-    await state.update_data(flow=flow.flow_exp, msg=msg)
+    await state.update_data(flow=flow.flow_exp, msg=msg, flow_db = flow)
     await bot.edit_message_text(chat_id=user_id, message_id=msg.message_id, text='Введи количество:', reply_markup=kbd.single_back())
     await AddExpenditure.next()
 
@@ -66,8 +66,12 @@ async def _price(msg: Message, state: FSMContext):
     await bot.delete_message(chat_id=user_id, message_id=msg.message_id)
     data = await state.get_data()
     try:
+        product = SessionDb.get(ProductDb, data['product_id'])
+        product.clicks +=1
+        flow_db:FlowDb = SessionDb.get(FlowDb,data['flow_db'].id)
+        flow_db.clicks+=1
         price = float(price)
-        exp = ExpenditureDb(user_id=user_id,product=data['product'], count=data['count'],price=price, flow_direction =data['flow'] )
+        exp = ExpenditureDb(user_id=user_id,product=product.product_name, count=data['count'],price=price, flow_direction =data['flow'] )
         SessionDb.add(exp)
         SessionDb.commit()
         await bot.edit_message_text(chat_id=user_id, message_id=data['msg'].message_id, text='Расход записан.', reply_markup=kbd.all_products(page=data['page'] if 'page' in data.keys() else 0))
@@ -85,4 +89,4 @@ async def replace_page_(cq: CallbackQuery, state:FSMContext):
     page_new = int(cq.data.split('replace_page_')[1])
     await state.update_data(page=page_new)
     data = await state.get_data()
-    await bot.edit_message_reply_markup(chat_id=user_id, message_id=msg.message_id, reply_markup=kbd.all_flows(page=page_new, product=data['product']))
+    await bot.edit_message_reply_markup(chat_id=user_id, message_id=msg.message_id, reply_markup=kbd.all_flows(page=page_new, product=data['product_id']))

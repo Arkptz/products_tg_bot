@@ -17,6 +17,7 @@ class ProductDb(Base):
     __tablename__ = "Product"
     id: Mapped[int] = mapped_column(primary_key=True)
     product_name: Mapped[str] = mapped_column(String(300))
+    clicks: Mapped[int] = mapped_column(default=0)
 
     def __repr__(self) -> str:
         return f"Product(id={self.id!r}, product_name={self.product_name!r}"
@@ -26,6 +27,7 @@ class FlowDb(Base):
     __tablename__ = "Flow"
     id: Mapped[int] = mapped_column(primary_key=True)
     flow_exp: Mapped[str] = mapped_column(String(300))
+    clicks: Mapped[int] = mapped_column(default=0)
 
     def __repr__(self) -> str:
         return f"Flow(id={self.id!r}, flow={self.flow_exp}!r)"

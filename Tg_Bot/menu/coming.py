@@ -11,7 +11,7 @@ import traceback
 
 @dp.callback_query_handler(text='coming')
 @admin
-async def coming(cq: CallbackQuery, state:FSMContext):
+async def coming(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
     await state.update_data(page=0)
@@ -25,8 +25,8 @@ async def select_product_(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
     id_product = int(cq.data.split('select_product_')[1])
-    a:ProductDb = SessionDb.get(ProductDb, id_product)
-    await state.update_data(product=a.product_name, msg=msg)
+    a: ProductDb = SessionDb.get(ProductDb, id_product)
+    await state.update_data(product=a.product_name, msg=msg, product_db = a)
     await bot.edit_message_text(chat_id=user_id, message_id=msg.message_id, text='Введи количество:', reply_markup=kbd.single_back())
     await AddComing.next()
 
@@ -39,8 +39,10 @@ async def count(msg: Message, state: FSMContext):
     await bot.delete_message(chat_id=user_id, message_id=msg.message_id)
     data = await state.get_data()
     try:
+        product_db:ProductDb = SessionDb.get(ProductDb, data['product_db'].id)
+        product_db.clicks +=1
         count = float(count)
-        com = ComingDb(user_id=user_id, product =data['product'], count = count)
+        com = ComingDb(user_id=user_id, product=data['product'], count=count)
         SessionDb.add(com)
         SessionDb.commit()
         await bot.edit_message_text(chat_id=user_id, message_id=data['msg'].message_id, text='Приход записан.', reply_markup=kbd.all_products(page=data['page'] if 'page' in data.keys() else 0))
@@ -51,7 +53,7 @@ async def count(msg: Message, state: FSMContext):
 
 @dp.callback_query_handler(Text(startswith='replace_page_'), state=[AddComing.product, AddExpenditure.product])
 @admin
-async def replace_page_(cq: CallbackQuery, state:FSMContext):
+async def replace_page_(cq: CallbackQuery, state: FSMContext):
     msg = cq.message
     user_id = msg.chat.id
     page_new = int(cq.data.split('replace_page_')[1])
